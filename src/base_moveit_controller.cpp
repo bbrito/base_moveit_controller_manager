@@ -148,7 +148,29 @@ void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
 	ROS_WARN("WHOLE BODY CONTROLLER execution of trajectory");
 	predictive_control::trajGoal goal;
 	goal.trajectory.multi_dof_joint_trajectory = t.multi_dof_joint_trajectory;
-	ROS_INFO_STREAM("New trajectory: " << t.multi_dof_joint_trajectory);
+
+  double ysqr, t3, t4;
+
+  
+	ROS_WARN_STREAM("t: " << t);
+ 
+  // Convert quaternions to euler angle and store in rotation.z
+  for ( int i = 0; i< ((int)goal.trajectory.multi_dof_joint_trajectory.points.size()) ; i++ ){
+   
+    ROS_INFO_STREAM("Quaternion angle" << goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z);
+   
+    ysqr = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.y * goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.y;
+    t3 = +2.0 * (goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.w * goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z
+                  + goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.x * goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.y);
+    t4 = +1.0 - 2.0 * (ysqr + goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z * goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z);
+  
+    goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z = atan2(t3, t4);
+  
+    ROS_INFO_STREAM("Euler angle" << goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z);
+
+  }
+
+	ROS_INFO_STREAM("Converted trajectory: " << goal.trajectory.multi_dof_joint_trajectory);
 	moveit_action_client_->sendGoal(goal);
 
 }
