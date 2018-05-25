@@ -143,6 +143,65 @@ void interpolate(sensor_msgs::JointState& js, const trajectory_msgs::JointTrajec
 }
 }
 
+void BaseBodyController::constructClothoid(const moveit_msgs::RobotTrajectory& trajectory)
+{
+
+    ROS_INFO_STREAM("Constructing clothoid from planned trajectory");
+
+    double clothoidLength = 0;
+    double x0, y0, theta0, x1, y1, theta1;
+    int res, traj_length;
+    uint n_pts = 10;
+
+    traj_length = trajectory.multi_dof_joint_trajectory.points.size();
+
+    std::vector<double> k(traj_length), dk(traj_length), L(traj_length), L_cumul(traj_length);
+
+    // Construct piecewise clothoid from trajectory points and store clothoid parameters
+    for (int traj_it = 0; traj_it < traj_length - 1; traj_it++)
+    {
+        x0 = trajectory.multi_dof_joint_trajectory.points[traj_it].transforms[0].translation.x;
+        y0 = trajectory.multi_dof_joint_trajectory.points[traj_it].transforms[0].translation.y;
+        theta0 = trajectory.multi_dof_joint_trajectory.points[traj_it].transforms[0].rotation.z;
+        
+        x1 = trajectory.multi_dof_joint_trajectory.points[traj_it + 1].transforms[0].translation.x;
+        y1 = trajectory.multi_dof_joint_trajectory.points[traj_it + 1].transforms[0].translation.y;
+        theta1 = trajectory.multi_dof_joint_trajectory.points[traj_it + 1].transforms[0].rotation.z;
+
+        res = Clothoid::buildClothoid(x0, y0, theta0, x1, y1, theta1, k[traj_it], dk[traj_it], L[traj_it]);
+
+        clothoidLength += L[traj_it];
+        L_cumul[traj_it] = clothoidLength;
+
+    }
+
+    // // Sample Clothoid for extra points on piecewise clothoid
+    std::vector<double> X_sample(n_pts), Y_sample(n_pts), X_clothoid, Y_clothoid;
+
+    for (int clothoid_it = 0; clothoid_it < traj_length - 1; clothoid_it++)
+    {
+
+        x0 = trajectory.multi_dof_joint_trajectory.points[clothoid_it].transforms[0].translation.x;
+        y0 = trajectory.multi_dof_joint_trajectory.points[clothoid_it].transforms[0].translation.y;
+        theta0 = trajectory.multi_dof_joint_trajectory.points[clothoid_it].transforms[0].rotation.z;
+        
+        res = Clothoid::pointsOnClothoid(x0, y0, theta0, k[clothoid_it], dk[clothoid_it], L[clothoid_it], n_pts, X_sample, Y_sample);
+
+        if (clothoid_it == 0)
+        {
+            X_clothoid = X_sample;
+            Y_clothoid = Y_sample;
+        }
+        else
+        {
+            X_clothoid.insert(X_clothoid.end(), X_sample.begin(), X_sample.end());
+            Y_clothoid.insert(Y_clothoid.end(), Y_sample.begin(), Y_sample.end());
+        }
+
+    }
+
+}
+
 void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
 {
 	ROS_WARN("WHOLE BODY CONTROLLER execution of trajectory");

@@ -47,9 +47,11 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <predictive_control/trajAction.h>
 #include <predictive_control/trajActionGoal.h>
+#include <g1fitting/Clothoid.h>
 
 #ifndef BASE_MOVEIT_CONTROLLER_MANAGER
 #define BASE_MOVEIT_CONTROLLER_MANAGER
+
 
 namespace base_moveit_controller_manager
 {
@@ -103,6 +105,7 @@ public:
   ~BaseBodyController(){};
 
 protected:
+  virtual void constructClothoid(const moveit_msgs::RobotTrajectory& trajectory);
   virtual void execTrajectory(const moveit_msgs::RobotTrajectory& t);
 
 private:
