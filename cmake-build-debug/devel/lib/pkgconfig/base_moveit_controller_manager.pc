@@ -1,0 +1,8 @@
+prefix=/home/boaz/workspace/src/base_moveit_controller_manager/cmake-build-debug/devel
+
+Name: base_moveit_controller_manager
+Description: Description of base_moveit_controller_manager
+Version: 0.0.1
+Cflags: -I/home/boaz/workspace/src/base_moveit_controller_manager/include/base_moveit_controller_manager -I/home/boaz/workspace/src/base_moveit_controller_manager/include
+Libs: -L/home/boaz/workspace/src/base_moveit_controller_manager/cmake-build-debug/devel/lib 
+Requires: moveit_core moveit_ros_planning moveit_fake_controller_manager predictive_control

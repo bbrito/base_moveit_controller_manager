@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: base_moveit_controller_manager
+Description: Description of base_moveit_controller_manager
+Version: 0.0.1
+Cflags: -I/usr/local/include
+Libs: -L/usr/local/lib 
+Requires: moveit_core moveit_ros_planning moveit_fake_controller_manager predictive_control

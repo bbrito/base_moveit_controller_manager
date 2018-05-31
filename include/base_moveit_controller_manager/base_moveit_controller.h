@@ -47,7 +47,8 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <predictive_control/trajAction.h>
 #include <predictive_control/trajActionGoal.h>
-#include <g1fitting/Clothoid.h>
+#include <vector>
+#include <tkspline/spline.h>
 
 #ifndef BASE_MOVEIT_CONTROLLER_MANAGER
 #define BASE_MOVEIT_CONTROLLER_MANAGER
@@ -105,7 +106,9 @@ public:
   ~BaseBodyController(){};
 
 protected:
-  virtual void constructClothoid(const moveit_msgs::RobotTrajectory& trajectory);
+
+  std::vector<tk::spline> referencePath(const moveit_msgs::RobotTrajectory& trajectory, double& spline_length, const int& n_points_spline, double& dist_spline_points);
+  virtual void insertParams(moveit_msgs::RobotTrajectory& trajectory,const std::vector<tk::spline>& spline,const double& spline_length, const int& n_points_spline, const double& dist_spline_pts);
   virtual void execTrajectory(const moveit_msgs::RobotTrajectory& t);
 
 private:

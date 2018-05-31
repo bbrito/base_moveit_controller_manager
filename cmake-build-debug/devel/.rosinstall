@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/boaz/workspace/src/base_moveit_controller_manager/cmake-build-debug/devel/setup.sh
