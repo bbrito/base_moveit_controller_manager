@@ -179,6 +179,10 @@ void spline::set_points(const std::vector<double>& x,
     assert(x.size()>2);
     m_x=x;
     m_y=y;
+
+    m_x_=x;
+    m_y_=y;
+
     int   n=x.size();
     // TODO: maybe sort x and y, rather than returning an error
     for(int i=0; i<n-1; i++) {

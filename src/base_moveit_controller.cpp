@@ -146,12 +146,12 @@ void interpolate(sensor_msgs::JointState& js, const trajectory_msgs::JointTrajec
 std::vector<tk::spline> BaseBodyController::referencePath(const moveit_msgs::RobotTrajectory& trajectory, double& spline_length, const int& n_points_spline, double& dist_spline_pts) {
 
     int traj_n = trajectory.multi_dof_joint_trajectory.points.size();
-    std::vector<double> X(traj_n), Y(traj_n),S(traj_n);
+    std::vector<double> X, Y, S;
     double x0, y0, x1, y1;
     double s = 0;
 
     // Store given trajectory x- and y-positions in a vector
-    for (int traj_it = 0; traj_it < traj_n - 2; traj_it++)
+    for (int traj_it = 0; traj_it < traj_n - 1; traj_it++)
     {
         x0 = trajectory.multi_dof_joint_trajectory.points[traj_it].transforms[0].translation.x;
         y0 = trajectory.multi_dof_joint_trajectory.points[traj_it].transforms[0].translation.y;
