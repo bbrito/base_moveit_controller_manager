@@ -214,9 +214,10 @@ std::vector<tk::spline> BaseBodyController::referencePath(const moveit_msgs::Rob
 void BaseBodyController::insertParams(moveit_msgs::RobotTrajectory& trajectory,const std::vector<tk::spline>& spline, const double& spline_length, const int& n_points_spline, const double& dist_spline_pts)
 {
 
-    int length_p = 20000;   // total parameter vector length (n * number of parameters)
-    int N = 50;             // prediction horizon length
-    int spline_index = 199; // Offset in parameter vector when spline parameters start
+//    int length_p = 20000;   // total parameter vector length (n * number of parameters)
+    int length_p = 1500;   // total parameter vector length (n * number of parameters)
+    int N = 12;             // prediction horizon length
+    int spline_index = 500; // Offset in parameter vector when spline parameters start
     int k;                  // Index in parameter vector for time horizon steps
 
     // We are going to store the whole vector in the RobotTrajectory structure
@@ -224,27 +225,26 @@ void BaseBodyController::insertParams(moveit_msgs::RobotTrajectory& trajectory,c
     trajectory.joint_trajectory.points[0].positions.resize(length_p);
 
     // Iterate over all horizon steps to insert parameters
-    for (int N_it = 0; N_it < N; N_it++)
-    {
+//    for (int N_it = 0; N_it < N; N_it++)
+//    {
 
-        k = N_it*N;
+//      k = N_it*N;
+      k = 0;
       trajectory.joint_trajectory.points[0].positions[k + 1] = n_points_spline;
       trajectory.joint_trajectory.points[0].positions[k + 2] = dist_spline_pts;
 
       // Insert spline coefficients of the separate x- and y-coordinate splines
       for (int j = 0 ; j<(n_points_spline - 1); j++ ) {
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10] = spline[0].m_a[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 1] = spline[0].m_b[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 2] = spline[0].m_c[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 3] = spline[0].m_d[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 4] = spline[1].m_a[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 5] = spline[1].m_b[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 6] = spline[1].m_c[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 7] = spline[1].m_d[n_points_spline];
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 8] = dist_spline_pts;
-        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 10 + 9] = dist_spline_pts;
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8] = spline[0].m_a[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 1] = spline[0].m_b[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 2] = spline[0].m_c[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 3] = spline[0].m_d[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 4] = spline[1].m_a[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 5] = spline[1].m_b[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 6] = spline[1].m_c[n_points_spline];
+        trajectory.joint_trajectory.points[0].positions[k + spline_index + j * 8 + 7] = spline[1].m_d[n_points_spline];
         }
-    }
+//    }
 
      ROS_INFO_STREAM("Insterted parameters in paramater vector");
 
@@ -274,7 +274,7 @@ void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
     // Initialize x- and y-coordinate spline
     std::vector<tk::spline> ref_path(2);
     double spline_length;
-    int n_points_spline = 20;   // Number of points the spline should be resampled with
+    int n_points_spline = 30;   // Number of points the spline should be resampled with
     double dist_spline_points;  // Initialize distance between spline points
 
     // Compute local reference path as a spline
@@ -285,7 +285,7 @@ void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
     insertParams(spline_goal.trajectory,ref_path,spline_length,n_points_spline,dist_spline_points);
 
     // Initialize moveit action
-	moveit_action_client_->sendGoal(goal);
+	moveit_action_client_->sendGoal(spline_goal);
 
 }
 
