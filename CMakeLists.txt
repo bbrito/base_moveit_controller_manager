@@ -25,6 +25,7 @@ find_package(catkin COMPONENTS
   sensor_msgs
   std_msgs
   trajectory_msgs
+		tf
   REQUIRED)
 
 #find_package(cornucopia REQUIRED)

@@ -250,6 +250,44 @@ void BaseBodyController::insertParams(moveit_msgs::RobotTrajectory& trajectory,c
 
 }
 
+	void BaseBodyController::transformPose(const std::string source_frame, const std::string target_frame, const geometry_msgs::Pose pose_in, geometry_msgs::Pose& pose_out)
+	{
+		ROS_WARN_STREAM("MPCC::transformPose ... find transformation matrix between "
+							<< target_frame.c_str() << " and " << source_frame.c_str());
+		bool transform = false;
+		geometry_msgs::PoseStamped stamped_in, stamped_out;
+		stamped_in.header.frame_id = source_frame;
+		stamped_in.pose = pose_in;
+		do
+		{
+			try
+			{
+				if (tf_listener_.frameExists(target_frame))
+				{
+					// clear output
+					pose_out = geometry_msgs::Pose();
+
+					ros::Time now = ros::Time::now();
+					tf_listener_.waitForTransform(target_frame, source_frame, now, ros::Duration(0.1));
+					tf_listener_.transformPose(target_frame, stamped_in, stamped_out);
+					pose_out = stamped_out.pose;
+					transform = true;
+				}
+
+				else
+				{
+					ROS_WARN_STREAM("MPCC::transformPose" << target_frame.c_str() << " does not exist");
+					transform = false;
+				}
+			}
+			catch (tf::TransformException& ex)
+			{
+				ROS_ERROR("MPCC::transformPose: \n%s", ex.what());
+				ros::Duration(0.1).sleep();
+			}
+		} while (!transform && ros::ok());
+	}
+
 void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
 {
 	ROS_WARN("WHOLE BODY CONTROLLER execution of trajectory");
@@ -259,7 +297,29 @@ void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
     double ysqr, t3, t4;
   
 	ROS_WARN_STREAM("t: " << t);
- 
+	geometry_msgs::Pose pose_in,pose_out;
+	// convert traj to base_link
+	/*
+	for ( int i = 0; i< ((int)goal.trajectory.multi_dof_joint_trajectory.points.size()) ; i++ )
+	{
+		pose_in.position.x = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].translation.x;
+		pose_in.position.y = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].translation.y;
+		pose_in.position.z = 0;
+		pose_in.orientation.x = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.x;
+		pose_in.orientation.y = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.y;
+		pose_in.orientation.z = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z;
+		pose_in.orientation.w = goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.w;
+		transformPose("odom", "base_link", pose_in, pose_out);
+
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].translation.x=pose_out.position.x;
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].translation.y=pose_out.position.y;
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].translation.z=pose_out.position.z;
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.x=pose_out.orientation.x;
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.y=pose_out.orientation.y;
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z=pose_out.orientation.z;
+		goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.w=pose_out.orientation.w;
+	}
+
     // Convert quaternions to euler angle and store in rotation.z
     for ( int i = 0; i< ((int)goal.trajectory.multi_dof_joint_trajectory.points.size()) ; i++ )
     {
@@ -270,7 +330,7 @@ void BaseBodyController::execTrajectory(const moveit_msgs::RobotTrajectory& t)
   
         goal.trajectory.multi_dof_joint_trajectory.points[i].transforms[0].rotation.z = atan2(t3, t4);
     }
-
+*/
     // Initialize x- and y-coordinate spline
     std::vector<tk::spline> ref_path(2);
     double spline_length;

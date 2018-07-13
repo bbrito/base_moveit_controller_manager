@@ -49,6 +49,9 @@
 #include <predictive_control/trajActionGoal.h>
 #include <vector>
 #include <tkspline/spline.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #ifndef BASE_MOVEIT_CONTROLLER_MANAGER
 #define BASE_MOVEIT_CONTROLLER_MANAGER
@@ -110,9 +113,11 @@ protected:
   std::vector<tk::spline> referencePath(const moveit_msgs::RobotTrajectory& trajectory, double& spline_length, const int& n_points_spline, double& dist_spline_points);
   virtual void insertParams(moveit_msgs::RobotTrajectory& trajectory,const std::vector<tk::spline>& spline,const double& spline_length, const int& n_points_spline, const double& dist_spline_pts);
   virtual void execTrajectory(const moveit_msgs::RobotTrajectory& t);
+  virtual void transformPose(const std::string source_frame, const std::string target_frame, const geometry_msgs::Pose pose_in, geometry_msgs::Pose& pose_out);
 
 private:
   ros::WallRate rate_;
+    tf::TransformListener tf_listener_;
 };
 
 }; /* End of base_moveit_controller_manager namespace */
